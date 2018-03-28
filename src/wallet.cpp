@@ -3359,6 +3359,8 @@ uint64_t CWallet::GetStakeWeight() const
         return 0;
 
     uint64_t nWeight = 0;
+    
+    int64_t nCurrentTime = GetTime()
 
     CTxDB txdb("r");
 
@@ -3368,8 +3370,13 @@ uint64_t CWallet::GetStakeWeight() const
     BOOST_FOREACH(PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setCoins)
     {
         CTxIndex txindex;
-        if (pcoin.first->GetDepthInMainChain() >= nStakeMinConfirmations)
+       if (!txdb.ReadTxIndex(pcoin.first->GetHash(), txindex))
+           continue;
+
+       if (nCurrentTime - pcoin.first->nTime > nStakeMinAge)        
             nWeight += pcoin.first->vout[pcoin.second].nValue;
+        
+
     }
 
     return nWeight;
